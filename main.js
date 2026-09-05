@@ -77,7 +77,7 @@ ipcMain.handle('fs:read-file', async (_, filePath) => {
   return content;
 });
 
-ipcMain.handle('fs:apply-patch', async (_, payload) => {
+async function applyPatchToWorkspace(payload) {
   const { filePath, originalCode, suggestedFix } = payload;
 
   if (!filePath || typeof originalCode !== 'string' || typeof suggestedFix !== 'string') {
@@ -116,7 +116,9 @@ ipcMain.handle('fs:apply-patch', async (_, payload) => {
   } catch (error) {
     return { ok: false, error: error.message };
   }
-});
+}
+
+ipcMain.handle('fs:apply-patch', async (_, payload) => applyPatchToWorkspace(payload));
 
 ipcMain.handle('app:ready', () => ({
   platform: process.platform,
@@ -127,7 +129,14 @@ app.whenReady().then(async () => {
   createWindow();
   try {
     let port = process.env.WS_PORT ? parseInt(process.env.WS_PORT, 10) : 8080;
-    const onMessage = (message, socket) => {
+    const onMessage = async (message, socket) => {
+      if (message.type === 'PATCH_REQUEST') {
+        const result = await applyPatchToWorkspace(message);
+        socket.send(JSON.stringify(result.ok
+          ? { type: 'PATCH_APPLIED', filePath: result.filePath, message: 'Patch applied successfully.' }
+          : { type: 'ERROR', message: result.error }));
+        return;
+      }
       mainWindow?.webContents.send('ws:alert', message);
       socket.send(JSON.stringify({ type: 'ALERT_RECEIVED', filePath: message.filePath }));
     };

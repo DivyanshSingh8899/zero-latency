@@ -10,7 +10,7 @@ export async function startWebSocketServer({ port = 8080, onMessage } = {}) {
     socket.on('message', (raw) => {
       try {
         const payload = JSON.parse(raw.toString());
-        if (!['STACK_TRACE', 'VISUAL_BUG'].includes(payload.type)) {
+        if (!['STACK_TRACE', 'VISUAL_BUG', 'PATCH_REQUEST'].includes(payload.type)) {
           socket.send(JSON.stringify({ type: 'ERROR', message: 'Unsupported alert type.' }));
           return;
         }

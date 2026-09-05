@@ -61,11 +61,39 @@ function App() {
 
   const applyPatch = async () => {
     if (!selectedAlert) return;
-    const response = await window.electronAPI?.applyPatch?.({
+    const patchPayload = {
       filePath: selectedAlert.filePath,
       originalCode: selectedAlert.originalCode,
       suggestedFix: selectedAlert.suggestedFix,
-    });
+    };
+    let response = await window.electronAPI?.applyPatch?.(patchPayload);
+    if (!window.electronAPI?.applyPatch) {
+      response = await new Promise((resolve) => {
+        const wsPort = new URLSearchParams(window.location.search).get('wsPort') || 8081;
+        const socket = new WebSocket(`ws://${window.location.hostname}:${wsPort}`);
+        const timer = window.setTimeout(() => {
+          socket.close();
+          resolve({ ok: false, error: 'Desktop bridge did not respond.' });
+        }, 5000);
+        socket.addEventListener('message', (event) => {
+          const message = JSON.parse(event.data);
+          if (message.type === 'PATCH_APPLIED') {
+            window.clearTimeout(timer);
+            socket.close();
+            resolve({ ok: true, filePath: message.filePath });
+          } else if (message.type === 'ERROR') {
+            window.clearTimeout(timer);
+            socket.close();
+            resolve({ ok: false, error: message.message });
+          }
+        });
+        socket.addEventListener('open', () => socket.send(JSON.stringify({ type: 'PATCH_REQUEST', ...patchPayload })));
+        socket.addEventListener('error', () => {
+          window.clearTimeout(timer);
+          resolve({ ok: false, error: 'Unable to reach the desktop bridge.' });
+        });
+      });
+    }
     if (response?.ok) {
       setApplied(true);
       setNotice('Patch applied to workspace');
