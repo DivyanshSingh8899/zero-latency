@@ -4,10 +4,36 @@ const connectionStatus = document.querySelector('#connection-status');
 const connectionDot = document.querySelector('#connection-dot');
 const reportForm = document.querySelector('#report-form');
 const sendStatus = document.querySelector('#send-status');
+const reportType = document.querySelector('#report-type');
+const fieldValues = {
+  filePath: document.querySelector('#file-path'),
+  lineNumber: document.querySelector('#line-number'),
+  originalCode: document.querySelector('#original-code'),
+  suggestedFix: document.querySelector('#suggested-fix'),
+  explanation: document.querySelector('#explanation'),
+};
 let socket;
+
+const visualBugDemo = {
+  filePath: 'src/components/Header.jsx',
+  lineNumber: 18,
+  originalCode: '  margin-top: 20px;',
+  suggestedFix: '  margin-top: 12px;',
+  explanation: 'The header overlaps the content on smaller screens because the top spacing is too large.',
+};
 
 const params = new URLSearchParams(window.location.search);
 urlInput.value = params.get('ws') || localStorage.getItem('zero-latency-ws-url') || '';
+
+function loadVisualBugDemo() {
+  Object.entries(visualBugDemo).forEach(([field, value]) => {
+    fieldValues[field].value = value;
+  });
+}
+
+reportType.addEventListener('change', () => {
+  if (reportType.value === 'VISUAL_BUG') loadVisualBugDemo();
+});
 
 function setConnectionState(connected, message) {
   connectionStatus.textContent = message;
