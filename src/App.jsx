@@ -96,8 +96,8 @@ function App() {
     }
     if (response?.ok) {
       setApplied(true);
-      setNotice('Patch applied to workspace');
-      setAlerts((current) => current.map((alert) => alert.id === selectedAlert.id ? { ...alert, status: 'Applied' } : alert));
+      setNotice(response.alreadyApplied ? 'Patch already applied' : 'Patch applied to workspace');
+      setAlerts((current) => current.map((alert) => alert.id === selectedAlert.id ? { ...alert, status: response.alreadyApplied ? 'Resolved' : 'Applied' } : alert));
     } else {
       setNotice(response?.error || 'Patch could not be applied');
     }

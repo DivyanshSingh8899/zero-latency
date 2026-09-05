@@ -91,6 +91,20 @@ async function applyPatchToWorkspace(payload) {
     }
 
     const currentContent = fs.readFileSync(targetPath, 'utf8');
+    if (currentContent.includes(suggestedFix) && !currentContent.includes(originalCode)) {
+      const result = { ok: true, alreadyApplied: true, filePath: targetPath };
+      mainWindow?.webContents.send('ws:status', {
+        type: 'APPLIED_SUCCESS',
+        filePath: targetPath,
+        message: 'Patch was already applied.',
+      });
+      wsServer?.broadcast({
+        type: 'PATCH_APPLIED',
+        filePath: targetPath,
+        message: 'Patch was already applied.',
+      });
+      return result;
+    }
     if (!currentContent.includes(originalCode)) {
       return { ok: false, error: 'The original code was not found in the target file.' };
     }
