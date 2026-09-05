@@ -5,7 +5,7 @@ import QRCodeModal from './components/QRCodeModal';
 
 const demoPayload = {
   type: 'STACK_TRACE',
-  filePath: 'C:/workspace/demo/app.js',
+  filePath: 'demo-file.js',
   lineNumber: 4,
   originalCode: '  console.log(numbers[5]);',
   suggestedFix: '  console.log(numbers[2]);',

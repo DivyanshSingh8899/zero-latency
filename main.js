@@ -85,33 +85,34 @@ ipcMain.handle('fs:apply-patch', async (_, payload) => {
   }
 
   try {
-    if (!fs.existsSync(filePath)) {
+    const targetPath = path.isAbsolute(filePath) ? filePath : path.resolve(__dirname, filePath);
+    if (!fs.existsSync(targetPath)) {
       return { ok: false, error: `File not found: ${filePath}` };
     }
 
-    const currentContent = fs.readFileSync(filePath, 'utf8');
+    const currentContent = fs.readFileSync(targetPath, 'utf8');
     if (!currentContent.includes(originalCode)) {
       return { ok: false, error: 'The original code was not found in the target file.' };
     }
 
     const updatedContent = currentContent.replace(originalCode, suggestedFix);
-    fs.writeFileSync(filePath, updatedContent, 'utf8');
+    fs.writeFileSync(targetPath, updatedContent, 'utf8');
 
     if (mainWindow) {
       mainWindow.webContents.send('ws:status', {
         type: 'APPLIED_SUCCESS',
-        filePath,
+        filePath: targetPath,
         message: 'Patch applied successfully.',
       });
     }
 
     wsServer?.broadcast({
       type: 'PATCH_APPLIED',
-      filePath,
+      filePath: targetPath,
       message: 'Patch applied successfully.',
     });
 
-    return { ok: true, filePath };
+    return { ok: true, filePath: targetPath };
   } catch (error) {
     return { ok: false, error: error.message };
   }

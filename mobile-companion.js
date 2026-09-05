@@ -15,11 +15,11 @@ const fieldValues = {
 let socket;
 
 const visualBugDemo = {
-  filePath: 'src/components/Header.jsx',
-  lineNumber: 18,
-  originalCode: '  margin-top: 20px;',
-  suggestedFix: '  margin-top: 12px;',
-  explanation: 'The header overlaps the content on smaller screens because the top spacing is too large.',
+  filePath: 'demo-file.js',
+  lineNumber: 4,
+  originalCode: '  console.log(numbers[5]);',
+  suggestedFix: '  console.log(numbers[2]);',
+  explanation: 'The visual debug demo highlights the invalid array access and replaces it with a valid item.',
 };
 
 const params = new URLSearchParams(window.location.search);
