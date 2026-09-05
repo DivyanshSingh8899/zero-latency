@@ -11,7 +11,7 @@ const __dirname = path.dirname(__filename);
 let mainWindow;
 let wsServer = null;
 
-const isDev = !app.isPackaged;
+const isDev = process.argv.includes('--dev');
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -24,7 +24,7 @@ function createWindow() {
     titleBarStyle: 'hiddenInset',
     trafficLightPosition: { x: 18, y: 18 },
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
+      preload: path.join(__dirname, 'preload.cjs'),
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: false,
